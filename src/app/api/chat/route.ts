@@ -1,20 +1,16 @@
 import { NextRequest } from "next/server";
-import OpenAI from "openai";
 import { streamText } from "ai";
+import { openai } from "@ai-sdk/openai";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!, // set this in Vercel or .env.local
-});
-
-export const runtime = "edge"; // best for streaming
+export const runtime = "edge";
 
 export async function POST(req: NextRequest) {
   const { messages } = await req.json();
 
   const result = await streamText({
-    model: client.chat.completions, // Vercel AI SDK wrapper
+    model: openai("gpt-4o-mini"), // or "gpt-3.5-turbo"
     messages,
   });
 
-  return result.toAIStreamResponse();
+  return result.toTextStreamResponse();
 }
