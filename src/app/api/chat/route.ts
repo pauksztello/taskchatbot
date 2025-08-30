@@ -1,16 +1,20 @@
-import { NextRequest } from "next/server";
-import { streamText } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { groq } from "@ai-sdk/groq";
+import { convertToModelMessages, streamText, UIMessage } from "ai";
 
-export const runtime = "edge";
+// Allow streaming responses up to 30 seconds
+export const maxDuration = 30;
 
-export async function POST(req: NextRequest) {
-  const { messages } = await req.json();
+export async function POST(req: Request) {
+  const { messages }: { messages: UIMessage[] } = await req.json();
 
-  const result = await streamText({
-    model: openai("gpt-4o-mini"), // or "gpt-3.5-turbo"
-    messages,
+  // ✅ Convert Vercel AI messages → OpenAI-compatible messages (no `id`)
+  const converted = convertToModelMessages(messages);
+
+  const result = streamText({
+    model: groq("llama-3.1-8b-instant"),
+    system: "You are a helpful assistant.",
+    messages: converted,
   });
 
-  return result.toTextStreamResponse();
+  return result.toUIMessageStreamResponse();
 }

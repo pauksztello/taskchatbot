@@ -1,40 +1,47 @@
 "use client";
 
-import { useState } from "react";
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
+import { useState } from "react";
 
-export default function ChatPage() {
-  const { messages, input, handleInputChange, handleSubmit } = useChat({
-    api: "/api/chat",
+export default function Page() {
+  const { messages, sendMessage, status } = useChat({
+    transport: new DefaultChatTransport({
+      api: "/api/chat",
+    }),
   });
+  const [input, setInput] = useState("");
 
   return (
-    <main className="flex flex-col p-6 max-w-lg mx-auto">
-      <div className="flex-1 overflow-y-auto space-y-3">
-        {messages.map((m) => (
-          <div
-            key={m.id}
-            className={m.role === "user" ? "text-blue-600" : "text-green-600"}
-          >
-            <b>{m.role}:</b> {m.content}
-          </div>
-        ))}
-      </div>
+    <>
+      {messages.map((message) => (
+        <div key={message.id}>
+          {message.role === "user" ? "User: " : "AI: "}
+          {message.parts.map((part, index) =>
+            part.type === "text" ? <span key={index}>{part.text}</span> : null,
+          )}
+        </div>
+      ))}
 
-      <form onSubmit={handleSubmit} className="mt-4 flex">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (input.trim()) {
+            sendMessage({ text: input });
+            setInput("");
+          }
+        }}
+      >
         <input
-          className="flex-1 border rounded px-3 py-2"
           value={input}
-          onChange={handleInputChange}
-          placeholder="Type a message..."
+          onChange={(e) => setInput(e.target.value)}
+          disabled={status !== "ready"}
+          placeholder="Say something..."
         />
-        <button
-          className="ml-2 bg-blue-500 text-white px-4 py-2 rounded"
-          type="submit"
-        >
-          Send
+        <button type="submit" disabled={status !== "ready"}>
+          Submit
         </button>
       </form>
-    </main>
+    </>
   );
 }
