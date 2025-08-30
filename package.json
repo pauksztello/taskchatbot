@@ -7,18 +7,25 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "db:push": "dotenv -e .env.local -- drizzle-kit push",
+    "db:generate": "dotenv -e .env.local -- drizzle-kit generate",
+    "db:studio": "dotenv -e .env.local -- drizzle-kit studio",
     "lint": "next lint"
   },
   "dependencies": {
     "@ai-sdk/groq": "^2.0.16",
     "@ai-sdk/openai": "^2.0.23",
     "@ai-sdk/react": "^2.0.28",
+    "@neondatabase/serverless": "^1.0.1",
     "ai": "^5.0.24",
+    "drizzle-kit": "^0.31.4",
+    "drizzle-orm": "^0.44.5",
     "geist": "^1.4.2",
     "groq-sdk": "^0.30.0",
     "next": "14.2.5",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "zod": "^4.1.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -26,6 +33,7 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.21",
+    "dotenv-cli": "^10.0.0",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.5",
     "postcss": "^8.5.6",
