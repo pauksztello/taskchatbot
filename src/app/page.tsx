@@ -1,47 +1,89 @@
 "use client";
 
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-export default function Page() {
-  const { messages, sendMessage, status } = useChat({
-    transport: new DefaultChatTransport({
-      api: "/api/chat",
-    }),
-  });
+type Msg = {
+  id: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  createdAt: string;
+};
+
+export default function ChatPage() {
+  const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // Load persisted history on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/chat", { method: "GET" });
+        if (!res.ok) throw new Error("Failed to load history");
+        const data: { threadId: string; messages: Msg[] } = await res.json();
+        setMessages(data.messages ?? []);
+      } catch (err) {
+        // optional: show a toast
+        console.error(err);
+      }
+    })();
+  }, []);
+
+  const canSend = useMemo(
+    () => input.trim().length > 0 && !loading,
+    [input, loading],
+  );
+
+  const send = useCallback(async () => {
+    if (!canSend) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: input }),
+      });
+      if (!res.ok) throw new Error("Message failed");
+      const data: { threadId: string; messages: Msg[] } = await res.json();
+      setMessages(data.messages ?? []);
+      setInput("");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [canSend, input]);
 
   return (
-    <>
-      {messages.map((message) => (
-        <div key={message.id}>
-          {message.role === "user" ? "User: " : "AI: "}
-          {message.parts.map((part, index) =>
-            part.type === "text" ? <span key={index}>{part.text}</span> : null,
-          )}
-        </div>
-      ))}
+    <main className="max-w-xl mx-auto p-6 space-y-4">
+      <div className="space-y-3">
+        {messages.map((m) => (
+          <div
+            key={m.id}
+            className={m.role === "user" ? "text-blue-600" : "text-green-700"}
+          >
+            <b>{m.role}:</b> {m.content}
+          </div>
+        ))}
+      </div>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (input.trim()) {
-            sendMessage({ text: input });
-            setInput("");
-          }
-        }}
-      >
+      <div className="flex gap-2">
         <input
+          className="flex-1 border rounded px-3 py-2"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          disabled={status !== "ready"}
-          placeholder="Say something..."
+          placeholder="Type a message…"
+          onKeyDown={(e) => e.key === "Enter" && send()}
+          disabled={loading}
         />
-        <button type="submit" disabled={status !== "ready"}>
-          Submit
+        <button
+          className="bg-black text-white px-4 py-2 rounded disabled:opacity-50"
+          onClick={send}
+          disabled={!canSend}
+        >
+          {loading ? "Sending…" : "Send"}
         </button>
-      </form>
-    </>
+      </div>
+    </main>
   );
 }
