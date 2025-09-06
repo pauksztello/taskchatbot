@@ -2,10 +2,20 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { eq, asc, desc } from "drizzle-orm";
-import { db, schema } from "@/lib/db";
+import { db, schema } from "../../../lib/db";
 
 import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
+
+if (!process.env.DATABASE_URL) {
+  console.error("DATABASE_URL is not set");
+}
+
+if (!process.env.OPENAI_API_KEY) {
+  console.error("OPENAI_API_KEY is not set");
+}
+
+
 
 export const maxDuration = 30;
 
@@ -187,3 +197,7 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ threadId, messages });
 }
+
+export const runtime = 'nodejs';
+
+
