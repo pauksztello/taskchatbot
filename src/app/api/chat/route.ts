@@ -2,7 +2,8 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { eq, asc, desc } from "drizzle-orm";
-import { db, schema } from "../../../lib/db";
+import { db, schema } from "@/lib/db";
+import { Msg, ChatRequestBody } from "@/lib/types";
 
 import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
@@ -15,7 +16,7 @@ if (!process.env.OPENAI_API_KEY) {
   console.error("OPENAI_API_KEY is not set");
 }
 
-
+export const runtime = 'nodejs';
 
 export const maxDuration = 30;
 
@@ -29,8 +30,7 @@ async function getOrCreateSessionAndThread(): Promise<{
   let sid: string | null = store.get("sid")?.value ?? null;
   if (!sid) {
     sid = crypto.randomUUID();
-    // In API routes, only name+value are supported for set()
-    store.set("sid", sid);
+     store.set("sid", sid);
   }
 
   // session
@@ -73,14 +73,6 @@ async function getOrCreateSessionAndThread(): Promise<{
   return { sessionId, threadId };
 }
 
-// What your page expects back from the API
-type Msg = {
-  id: string;
-  role: "user" | "assistant" | "system";
-  content: string;
-  createdAt: string;
-};
-
 // --- GET: return full history for the current thread ---
 export async function GET() {
   const { threadId } = await getOrCreateSessionAndThread();
@@ -115,22 +107,20 @@ export async function GET() {
 export async function POST(req: Request) {
   const { threadId } = await getOrCreateSessionAndThread();
 
-  // accept { message }, { text }, or { messages: [...] } shapes
-  let body: any = null;
+  let body: ChatRequestBody | null = null;
   try {
     body = await req.json();
   } catch {
     // ignore
   }
 
-  let userInput =
-    (typeof body?.message === "string" && body.message) ||
-    (typeof body?.text === "string" && body.text) ||
-    (Array.isArray(body?.messages) &&
-      body.messages.length > 0 &&
-      typeof body.messages[body.messages.length - 1]?.content === "string" &&
-      body.messages[body.messages.length - 1].content) ||
-    "";
+  let userInput = "";
+  
+  if (body) {
+    if ("message" in body && typeof body.message === "string") {
+      userInput = body.message;
+    }
+  }
 
   userInput = userInput.trim();
   if (!userInput) {
@@ -197,7 +187,4 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ threadId, messages });
 }
-
-export const runtime = 'nodejs';
-
 

@@ -2,13 +2,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-
-type Msg = {
-  id: string;
-  role: "user" | "assistant" | "system";
-  content: string;
-  createdAt: string;
-};
+import { Msg } from "@/lib/types";
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Msg[]>([]);
