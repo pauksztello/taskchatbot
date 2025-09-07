@@ -32,7 +32,7 @@ export const messages = pgTable("messages", {
   threadId: uuid("thread_id")
     .notNull()
     .references(() => threads.id, { onDelete: "cascade" }),
-  role: roleEnum("role").notNull(), // 'user' | 'assistant' | 'system'
+  role: roleEnum("role").notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });

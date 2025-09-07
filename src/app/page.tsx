@@ -1,6 +1,5 @@
+// app/page.tsx
 "use client";
-
-// import ChatPage from "./api/chat/ChatPage";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -18,22 +17,22 @@ export default function ChatPage() {
 
   // Load persisted history on mount
   useEffect(() => {
-    (async () => {
+    async function fetchData() {
       try {
-        const res = await fetch("/api/chat", { method: "GET" });
+        const res = await fetch("/api/chat");
         if (!res.ok) throw new Error("Failed to load history");
         const data: { threadId: string; messages: Msg[] } = await res.json();
         setMessages(data.messages ?? []);
       } catch (err) {
-        // optional: show a toast
         console.error(err);
       }
-    })();
+    }
+    fetchData();
   }, []);
 
   const canSend = useMemo(
     () => input.trim().length > 0 && !loading,
-    [input, loading],
+    [input, loading]
   );
 
   const send = useCallback(async () => {
