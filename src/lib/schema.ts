@@ -6,53 +6,60 @@ import {
   text,
   timestamp,
   pgEnum,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
-// Optional enum for safety (user/assistant/system)
 export const roleEnum = pgEnum("message_role", ["user", "assistant", "system"]);
 
 export const sessions = pgTable("sessions", {
-  id: uuid("id").primaryKey().defaultRandom(), // uses gen_random_uuid()
-  // store the cookie value so we can look up by sid
+  id: uuid("id").primaryKey().defaultRandom(), 
   cookieId: varchar("cookie_id", { length: 64 }).notNull().unique(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
-export const threads = pgTable("threads", {
+export const chats = pgTable("chats", {
   id: uuid("id").primaryKey().defaultRandom(),
   sessionId: uuid("session_id")
     .notNull()
-    .references(() => sessions.id, { onDelete: "cascade" }),
+    .references(() => sessions.id, { onDelete: "cascade" }), 
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
 export const messages = pgTable("messages", {
   id: uuid("id").primaryKey().defaultRandom(),
-  threadId: uuid("thread_id")
+  chatId: uuid("chat_id")
     .notNull()
-    .references(() => threads.id, { onDelete: "cascade" }),
+    .references(() => chats.id, { onDelete: "cascade" }),
   role: roleEnum("role").notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
-// (Optional) relations helpers if you need them later
+export const userProfiles = pgTable("user_profiles", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => sessions.id, { onDelete: "cascade" }),
+  preferences: jsonb("preferences"),
+  personalInfo: jsonb("personal_info"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
 export const sessionsRelations = relations(sessions, ({ many }) => ({
-  threads: many(threads),
+  chats: many(chats),
 }));
 
-export const threadsRelations = relations(threads, ({ one, many }) => ({
+export const chatsRelations = relations(chats, ({ one, many }) => ({
   session: one(sessions, {
-    fields: [threads.sessionId],
+    fields: [chats.sessionId],
     references: [sessions.id],
   }),
   messages: many(messages),
 }));
 
 export const messagesRelations = relations(messages, ({ one }) => ({
-  thread: one(threads, {
-    fields: [messages.threadId],
-    references: [threads.id],
+  chat: one(chats, {
+    fields: [messages.chatId],
+    references: [chats.id],
   }),
 }));

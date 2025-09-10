@@ -26,7 +26,7 @@ export function middleware(req: NextRequest) {
 
     return res;
   } catch (err) {
-    // Never throw in middleware; fail open
+    // Never throw in middleware
     console.error("middleware error:", err);
     return NextResponse.next();
   }
@@ -34,5 +34,13 @@ export function middleware(req: NextRequest) {
 
 // Exclude static assets; include API + pages
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    "/((?!_next/static|_next/image|favicon.ico).*)",
+  ],
 };
