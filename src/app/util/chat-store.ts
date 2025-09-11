@@ -1,11 +1,10 @@
 import { db, schema } from '@/lib/db';
-import { getOrCreateChat, getSessionByCookie } from '@/lib/session';
+import { getOrCreateChat} from '@/lib/session';
 import { UIMessage } from 'ai';
 import { eq, asc } from "drizzle-orm";
 
 export async function createChat(cookieId: string): Promise<string> {
-  const { sessionId } = await getSessionByCookie(cookieId);
-  const { chatId } = await getOrCreateChat(sessionId);
+  const { chatId } = await getOrCreateChat(cookieId);
   return chatId;
 }
 
