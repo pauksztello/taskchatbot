@@ -5,12 +5,10 @@ import {
   varchar,
   text,
   timestamp,
-  pgEnum,
   jsonb,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-
-export const roleEnum = pgEnum("message_role", ["user", "assistant", "system"]);
+import { generateId, UIMessage } from 'ai';
 
 export const sessions = pgTable("sessions", {
   id: uuid("id").primaryKey().defaultRandom(), 
@@ -19,7 +17,7 @@ export const sessions = pgTable("sessions", {
 });
 
 export const chats = pgTable("chats", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: uuid("id").primaryKey(),
   sessionId: uuid("session_id")
     .notNull()
     .references(() => sessions.id, { onDelete: "cascade" }), 
@@ -27,24 +25,13 @@ export const chats = pgTable("chats", {
 });
 
 export const messages = pgTable("messages", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  message: jsonb('message').$type<UIMessage>().notNull(),
   chatId: uuid("chat_id")
     .notNull()
     .references(() => chats.id, { onDelete: "cascade" }),
-  role: roleEnum("role").notNull(),
-  content: text("content").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
-export const userProfiles = pgTable("user_profiles", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => sessions.id, { onDelete: "cascade" }),
-  preferences: jsonb("preferences"),
-  personalInfo: jsonb("personal_info"),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
-});
 export const sessionsRelations = relations(sessions, ({ many }) => ({
   chats: many(chats),
 }));

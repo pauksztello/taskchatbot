@@ -5,16 +5,13 @@ export function middleware(req: NextRequest) {
   try {
     const res = NextResponse.next();
 
-    // Read current cookie
     const existing = req.cookies.get("sid")?.value;
 
     if (!existing) {
-      // Generate UUID in Edge-safe way
       const uuid =
         (globalThis.crypto as any)?.randomUUID?.() ??
         `${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
 
-      // Set cookie with options (Edge middleware supports options)
       res.cookies.set("sid", uuid, {
         httpOnly: true,
         secure: true,
@@ -26,7 +23,6 @@ export function middleware(req: NextRequest) {
 
     return res;
   } catch (err) {
-    // Never throw in middleware
     console.error("middleware error:", err);
     return NextResponse.next();
   }

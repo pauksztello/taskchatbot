@@ -1,9 +1,15 @@
-'use client';
-
 import { redirect } from 'next/navigation';
 import { createChat } from '@/app/util/chat-store';
+import { cookies } from 'next/headers';
 
 export default async function Page() {
-  const id = await createChat(); // create a new chat
-  redirect(`/api/chat/${id}`); // redirect to chat page, see below
+  const cookieStore = cookies();
+  const cookieId = cookieStore.get('sid')?.value;
+  
+  if (!cookieId) {
+    throw new Error('No session cookie found'); // Fails only if middleware is not working
+  }
+  
+  const chatId = await createChat(cookieId);
+  redirect(`/api/chat/${chatId}`);
 }

@@ -1,49 +1,59 @@
 // app/api/chat/route.ts
-import { NextResponse } from "next/server";
-import { eq, asc } from "drizzle-orm";
+import {
+  convertToModelMessages,
+  streamText,
+  UIMessage,
+  validateUIMessages,
+  tool,
+} from 'ai';
+//import { z } from 'zod';
+import { loadChat, saveChat } from '@/app/util/chat-store';
 import { openai } from '@ai-sdk/openai';
-import { convertToModelMessages, streamText, UIMessage } from 'ai';
-import { db, schema } from "@/lib/db";
-import { getOrCreateSession, getOrCreateChat } from "@/lib/session";
-
-if (!process.env.DATABASE_URL) console.error("DATABASE_URL is not set");
-if (!process.env.OPENAI_API_KEY) console.error("OPENAI_API_KEY is not set");
-
-export async function GET() {
-  const { sessionId } = await getOrCreateSession();
-  const { chatId } = await getOrCreateChat(sessionId);
-
-  const rows: {
-    id: string;
-    role: string;
-    content: string;
-    createdAt: Date | null;
-  }[] = await db
-    .select({
-      id: schema.messages.id,
-      role: schema.messages.role,
-      content: schema.messages.content,
-      createdAt: schema.messages.createdAt,
-    })
-    .from(schema.messages)
-    .where(eq(schema.messages.chatId, chatId))
-    .orderBy(asc(schema.messages.createdAt));
-
-  return NextResponse.json({ chatId });
-}
+/*
+// Define your tools
+const tools = {
+  weather: tool({
+    description: 'Get weather information',
+    parameters: z.object({
+      location: z.string(),
+      units: z.enum(['celsius', 'fahrenheit']),
+    }),
+    execute: async ({ location, units }) => {
+      // tool implementation 
+    },
+  }),
+  // other tools
+};
+*/
 
 export async function POST(req: Request) {
-  const { sessionId } = await getOrCreateSession();
-  const { chatId } = await getOrCreateChat(sessionId);
+  const { message, id } = await req.json();
 
-    const { messages }: { messages: UIMessage[] } = await req.json();
-  
-    const result = streamText({
-      model: openai('gpt-4.1'),
-      system: 'You are a helpful assistant.',
-      messages: convertToModelMessages(messages),
-    });
-  
-    return result.toUIMessageStreamResponse();
-  }
+  // Load previous messages from database
+  const previousMessages = await loadChat(id);
 
+  // Append new message to previousMessages messages
+  const messages = [...previousMessages, message];
+
+  // Validate loaded messages against
+  // tools, data parts schema, and metadata schema
+  const validatedMessages = await validateUIMessages({
+    messages,
+    //tools, // Ensures tool calls in messages match current schemas
+    //dataPartsSchema,
+    //metadataSchema,
+  });
+
+  const result = streamText({
+    model: openai('gpt-4o-mini'),
+    messages: convertToModelMessages(validatedMessages),
+    //tools,
+  });
+
+  return result.toUIMessageStreamResponse({
+    originalMessages: messages,
+    onFinish: ({ messages }) => {
+      saveChat({ chatId: id, messages });
+    },
+  });
+}
