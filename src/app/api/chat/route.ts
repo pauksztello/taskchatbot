@@ -28,7 +28,7 @@ const tools = {
 */
 
 export async function POST(req: Request) {
-  await clearAllMessages();
+  //await clearAllMessages();
   const { message, id } = await req.json();
   
   const previousMessages = await loadChat(id);
