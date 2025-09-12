@@ -3,7 +3,6 @@
 import { UIMessage, useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import { useState } from 'react';
-
 export default function Chat({
   id,
   initialMessages,
@@ -11,9 +10,13 @@ export default function Chat({
   const [input, setInput] = useState('');
   const { sendMessage, messages } = useChat({
     id, // use the provided chat ID
-    messages: initialMessages, // load initial messages
+    messages: initialMessages,
     transport: new DefaultChatTransport({
       api: '/api/chat',
+
+      prepareSendMessagesRequest({ messages, id }) {
+        return { body: { message: messages[messages.length - 1], id } };
+      },
     }),
   });
 

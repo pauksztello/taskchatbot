@@ -5,9 +5,10 @@ import {
   UIMessage,
   validateUIMessages,
   tool,
+  createIdGenerator,
 } from 'ai';
 //import { z } from 'zod';
-import { loadChat, saveChat } from '@/app/util/chat-store';
+import { clearAllMessages, loadChat, saveChat } from '@/app/util/chat-store';
 import { openai } from '@ai-sdk/openai';
 /*
 // Define your tools
@@ -27,12 +28,11 @@ const tools = {
 */
 
 export async function POST(req: Request) {
+  await clearAllMessages();
   const { message, id } = await req.json();
-
-  // Load previous messages from database
+  
   const previousMessages = await loadChat(id);
 
-  // Append new message to previousMessages messages
   const messages = [...previousMessages, message];
 
   // Validate loaded messages against
@@ -52,8 +52,12 @@ export async function POST(req: Request) {
 
   return result.toUIMessageStreamResponse({
     originalMessages: messages,
+    generateMessageId: createIdGenerator({
+      prefix: 'msg',
+      size: 16,
+    }),
     onFinish: ({ messages }) => {
-      saveChat({ chatId: id, messages });
+     saveChat({ chatId: id, messages });
     },
   });
 }

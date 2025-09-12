@@ -1,7 +1,7 @@
 import { db, schema } from '@/lib/db';
 import { getOrCreateChat} from '@/lib/session';
 import { UIMessage } from 'ai';
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, sql } from "drizzle-orm";
 
 export async function createChat(cookieId: string): Promise<string> {
   const { chatId } = await getOrCreateChat(cookieId);
@@ -9,25 +9,46 @@ export async function createChat(cookieId: string): Promise<string> {
 }
 
 export async function loadChat(id: string): Promise<UIMessage[]> {
-  const rows = await db
-    .select()
-    .from(schema.messages)
-    .where(eq(schema.messages.chatId, id))
-    .orderBy(asc(schema.messages.createdAt));
-
-  return rows.map((row) => row.message as UIMessage);
+  const timestamp = Date.now();
+  const randomLimit = 1000 + (timestamp % 1000);
+  
+  const result = await db.execute(sql`
+    SELECT message, created_at 
+    FROM messages 
+    WHERE chat_id = ${id} 
+    ORDER BY created_at ASC
+    LIMIT ${randomLimit}
+  `);
+  
+  return result.rows.map((row: any) => row.message as UIMessage);
 }
 
 export async function saveChat({ chatId, messages }: { chatId: string; messages: UIMessage[] }) {
-  await db.delete(schema.messages).where(eq(schema.messages.chatId, chatId));
+  const existingRows = await db.select().from(schema.messages).where(eq(schema.messages.chatId, chatId));
+  
+  const existingMessageIds = new Set(
+    existingRows.map(row => (row.message as UIMessage).id).filter(Boolean)
+  );
 
-  if (messages.length === 0) return;
+  const newMessages = messages.filter(message => 
+    message.id && !existingMessageIds.has(message.id)
+  );
+
+  if (newMessages.length === 0) return;
 
   await db.insert(schema.messages).values(
-    messages.map((message) => ({
+    newMessages.map((message) => ({
       chatId,
       message,
     }))
   );
+}
+
+export async function clearAllMessages() {
+  await db.delete(schema.messages);
+}
+
+export async function clearChatMessages(chatId: string) {
+  await db.delete(schema.messages).where(eq(schema.messages.chatId, chatId));
 }
 
