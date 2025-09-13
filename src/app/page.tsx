@@ -3,7 +3,7 @@ import { createChat } from '@/app/util/chat-store';
 import { cookies } from 'next/headers';
 
 export default async function Page() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const cookieId = cookieStore.get('sid')?.value;
   
   if (!cookieId) {
