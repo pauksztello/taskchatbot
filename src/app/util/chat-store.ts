@@ -31,8 +31,8 @@ export async function loadChat(id: string): Promise<{messages: UIMessage[], stre
           streamId: (streamResult.rows[0]?.stream_id as string) ?? null};
 }
 
-export async function saveChat({ chatId, messages, activeStreamId }: 
-  { chatId: string; messages: UIMessage[]; activeStreamId: string | null }) {
+export async function saveChat({ chatId, messages, streamId }: 
+  { chatId: string; messages: UIMessage[]; streamId: string | null }) {
   const existingRows = await db.select().from(schema.messages).where(eq(schema.messages.chatId, chatId));
   
   const existingMessageIds = new Set(
@@ -42,6 +42,10 @@ export async function saveChat({ chatId, messages, activeStreamId }:
   const newMessages = messages.filter(message => 
     message.id && !existingMessageIds.has(message.id)
   );
+
+  await db.update(schema.chats)
+  .set({ streamId: streamId })
+  .where(eq(schema.chats.id, chatId));
 
   if (newMessages.length === 0) return;
 

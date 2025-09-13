@@ -12,7 +12,6 @@ export async function GET(
   const chat = await loadChat(id);
 
   if (chat.streamId == null) {
-    // no content response when there is no active stream
     return new Response(null, { status: 204 });
   }
 

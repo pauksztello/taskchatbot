@@ -6,7 +6,6 @@ import {
   validateUIMessages,
   tool,
   createIdGenerator,
-  generateId,
 } from 'ai';
 //import { z } from 'zod';
 import { clearAllMessages, loadChat, saveChat } from '@/app/util/chat-store';
@@ -48,12 +47,21 @@ export async function POST(req: Request) {
     //metadataSchema,
   });
 
-  saveChat({ chatId: id, messages, activeStreamId: null });
+  saveChat({ chatId: id, messages, streamId: null });
 
   const result = streamText({
     model: openai('gpt-4o-mini'),
     messages: convertToModelMessages(validatedMessages),
     //tools,
+
+    // forward the abort signal:
+    abortSignal: req.signal,
+    onAbort: ({ steps }) => {
+      // Handle cleanup when stream is aborted
+      saveChat({ chatId: id, messages, streamId: null });
+      // Persist partial results to database
+    },    
+
   });
 
   return result.toUIMessageStreamResponse({
@@ -63,17 +71,17 @@ export async function POST(req: Request) {
       size: 16,
     }),
     onFinish: ({ messages }) => {
-     saveChat({ chatId: id, messages, activeStreamId: null });
+     saveChat({ chatId: id, messages, streamId: null });
     },
         async consumeSseStream({ stream }) {
-      const streamId = generateId();
+      const streamId = crypto.randomUUID();
 
       // Create a resumable stream from the SSE stream
       const streamContext = createResumableStreamContext({ waitUntil: after });
       await streamContext.createNewResumableStream(streamId, () => stream);
 
       // Update the chat with the active stream ID
-      saveChat({ chatId: id, messages: [], activeStreamId: streamId });
+      saveChat({ chatId: id, messages: [], streamId: streamId });
     },
   });
 }

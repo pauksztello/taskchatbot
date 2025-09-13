@@ -22,10 +22,6 @@ export default function Chat({
         return {
           api: `/api/chat/${id}/stream`,
           credentials: 'include',
-          headers: {
-            Authorization: 'Bearer token',
-            'X-Custom-Header': 'value',
-          },
         };
       },
     }),
