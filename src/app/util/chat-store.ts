@@ -8,7 +8,7 @@ export async function createChat(cookieId: string): Promise<string> {
   return chatId;
 }
 
-export async function loadChat(id: string): Promise<UIMessage[]> {
+export async function loadChat(id: string): Promise<{messages: UIMessage[], streamId: string | null}> {
   const timestamp = Date.now();
   const randomLimit = 1000 + (timestamp % 1000);
   
@@ -19,11 +19,20 @@ export async function loadChat(id: string): Promise<UIMessage[]> {
     ORDER BY created_at ASC
     LIMIT ${randomLimit}
   `);
+
+  const streamResult = await db.execute(sql`
+    SELECT stream_id
+    FROM chats 
+    WHERE id = ${id} 
+    LIMIT ${randomLimit}
+  `);
   
-  return result.rows.map((row: any) => row.message as UIMessage);
+  return {messages: result.rows.map((row: any) => row.message as UIMessage), 
+          streamId: (streamResult.rows[0]?.stream_id as string) ?? null};
 }
 
-export async function saveChat({ chatId, messages }: { chatId: string; messages: UIMessage[] }) {
+export async function saveChat({ chatId, messages, activeStreamId }: 
+  { chatId: string; messages: UIMessage[]; activeStreamId: string | null }) {
   const existingRows = await db.select().from(schema.messages).where(eq(schema.messages.chatId, chatId));
   
   const existingMessageIds = new Set(

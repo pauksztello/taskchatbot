@@ -9,13 +9,24 @@ export default function Chat({
 }: { id?: string | undefined; initialMessages?: UIMessage[] } = {}) {
   const [input, setInput] = useState('');
   const { sendMessage, messages } = useChat({
-    id, // use the provided chat ID
+    id,
     messages: initialMessages,
+    resume: true,
     transport: new DefaultChatTransport({
       api: '/api/chat',
 
       prepareSendMessagesRequest({ messages, id }) {
         return { body: { message: messages[messages.length - 1], id } };
+      },
+      prepareReconnectToStreamRequest: ({ id }) => {
+        return {
+          api: `/api/chat/${id}/stream`,
+          credentials: 'include',
+          headers: {
+            Authorization: 'Bearer token',
+            'X-Custom-Header': 'value',
+          },
+        };
       },
     }),
   });
