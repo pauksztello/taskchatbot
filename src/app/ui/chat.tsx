@@ -38,7 +38,6 @@ export default function Chat({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
@@ -84,7 +83,6 @@ export default function Chat({
         )}
       </div>
 
-      {/* Input Area */}
       <div className="border-t border-gray-200 bg-white p-4">
         <form onSubmit={handleSubmit} className="flex gap-3">
           <div className="flex-1 relative">

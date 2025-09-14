@@ -42,7 +42,6 @@ export default function ChatSidebar({
 
   return (
     <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-full">
-      {/* Header */}
       <div className="p-4 border-b border-gray-100">
         <button
           onClick={onNewChat}
@@ -57,7 +56,6 @@ export default function ChatSidebar({
         </button>
       </div>
 
-      {/* Chat List */}
       <div className="flex-1 overflow-y-auto">
         {chats.length === 0 ? (
           <div className="p-4 text-center text-gray-500">
@@ -98,7 +96,6 @@ export default function ChatSidebar({
                       </p>
                     </div>
                     
-                    {/* Delete Button */}
                     {hoveredChat === chat.id && (
                       <button
                         onClick={(e) => {
@@ -121,7 +118,6 @@ export default function ChatSidebar({
         )}
       </div>
 
-      {/* Footer */}
       <div className="p-4 border-t border-gray-100">
         <div className="text-xs text-gray-400 text-center">
           {chats.length} {chats.length === 1 ? 'chat' : 'chats'}

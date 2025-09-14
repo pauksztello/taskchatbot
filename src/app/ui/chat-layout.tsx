@@ -1,6 +1,5 @@
 'use client';
 
-import { UIMessage } from '@ai-sdk/react';
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import ChatSidebar from '@/app/ui/chat-sidebar';
@@ -20,20 +19,17 @@ interface ChatLayoutProps {
 export default function ChatLayout({ children }: ChatLayoutProps) {
   const [chats, setChats] = useState<Chat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
-  // Extract chatId from pathname
   const chatId = pathname.includes('/api/chat/') ? pathname.split('/api/chat/')[1] : null;
-  
-  // Only show chat layout for chat routes
   const isChatRoute = pathname.startsWith('/api/chat/');
 
   useEffect(() => {
     loadChats();
   }, []);
 
-  // Refresh chat list when pathname changes (for title updates)
   useEffect(() => {
     if (isChatRoute) {
       loadChats();
@@ -73,7 +69,7 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
       
       if (response.ok) {
         const newChat = await response.json();
-        await loadChats(); // Reload sidebar with new chat
+        await loadChats();
         router.push(`/api/chat/${newChat.id}`);
       }
     } catch (error) {
@@ -83,6 +79,7 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
 
   const handleChatSelect = (selectedChatId: string) => {
     router.push(`/api/chat/${selectedChatId}`);
+    setIsSidebarOpen(false); 
   };
 
   const handleDeleteChat = async (chatIdToDelete: string) => {
@@ -92,7 +89,7 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
       });
       
       if (response.ok) {
-        await loadChats(); // Reload sidebar after deletion
+        await loadChats();
         if (chatIdToDelete === chatId) {
           const remainingChats = chats.filter(chat => chat.id !== chatIdToDelete);
           if (remainingChats.length > 0) {
@@ -107,7 +104,6 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
     }
   };
 
-  // If not a chat route, just render children without layout
   if (!isChatRoute) {
     return <>{children}</>;
   }
@@ -127,15 +123,44 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <ChatSidebar
-        chats={chats}
-        currentChatId={chatId || ''}
-        onChatSelect={handleChatSelect}
-        onNewChat={handleNewChat}
-        onDeleteChat={handleDeleteChat}
-      />
-      <div className="flex-1 flex flex-col">
-        {children}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+      
+      <div className={`
+        fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        lg:translate-x-0 lg:flex lg:flex-col
+      `}>
+        <ChatSidebar
+          chats={chats}
+          currentChatId={chatId || ''}
+          onChatSelect={handleChatSelect}
+          onNewChat={handleNewChat}
+          onDeleteChat={handleDeleteChat}
+        />
+      </div>
+      
+      <div className="flex-1 flex flex-col lg:ml-0">
+        <div className="lg:hidden bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <h1 className="text-lg font-semibold text-gray-900">Chat</h1>
+          <div className="w-10" />
+        </div>
+        
+        <div className="flex-1 overflow-hidden">
+          {children}
+        </div>
       </div>
     </div>
   );

@@ -15,7 +15,6 @@ import { getMCPClient } from '@/lib/tools';
 
 
 export async function POST(req: Request) {
-  //await clearAllMessages();
   const { message, id }: { message: UIMessage | undefined; id: string; } = await req.json();  
 
   const { messages: previousMessages } = await loadChat(id);
@@ -54,11 +53,9 @@ export async function POST(req: Request) {
     async consumeSseStream({ stream }) {
       const streamId = crypto.randomUUID();
 
-      // Create a resumable stream from the SSE stream
       const streamContext = createResumableStreamContext({ waitUntil: after });
       await streamContext.createNewResumableStream(streamId, () => stream);
 
-      // Update the chat with the active stream ID
       saveChat({ chatId: id, messages: [], streamId: streamId });
     },
   });

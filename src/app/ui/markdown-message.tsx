@@ -17,7 +17,6 @@ export default function MarkdownMessage({ content, className = '' }: MarkdownMes
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeHighlight]}
         components={{
-          // Custom styling for different markdown elements
           h1: ({ children }) => (
             <h1 className="text-xl font-bold mb-3 text-gray-900 border-b border-gray-200 pb-2">
               {children}
