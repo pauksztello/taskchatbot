@@ -7,7 +7,7 @@ import {
   createIdGenerator,
 } from 'ai';
 //import { z } from 'zod';
-import { clearAllMessages, loadChat, saveChat } from '@/app/util/chat-store';
+import { clearAllMessages, loadChat, saveChat, generateChatTitle } from '@/app/util/chat-store';
 import { openai } from '@ai-sdk/openai';
 import { after } from 'next/server';
 import { createResumableStreamContext } from 'resumable-stream'
@@ -45,6 +45,11 @@ export async function POST(req: Request) {
     }),
     onFinish: ({ messages }) => {
      saveChat({ chatId: id, messages, streamId: null });
+     
+     const userMessages = messages.filter(m => m.role === 'user');
+     if (userMessages.length === 1) { 
+       generateChatTitle(id);
+     }
     },
     async consumeSseStream({ stream }) {
       const streamId = crypto.randomUUID();

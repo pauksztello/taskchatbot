@@ -4,6 +4,7 @@ import {
   uuid,
   timestamp,
   jsonb,
+  text,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 import { generateId, UIMessage } from 'ai';
@@ -12,7 +13,9 @@ export const chats = pgTable("chats", {
   id: uuid("id").primaryKey(),
   streamId: uuid("stream_id").default(sql`null`),
   cookieId: uuid("cookie_id").notNull(),
+  title: text("title"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
 export const messages = pgTable("messages", {

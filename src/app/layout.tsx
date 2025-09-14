@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 
 import "./globals.css";
 import { GeistSans } from "geist/font/sans";
+import ChatLayout from '@/app/ui/chat-layout';
+
 const geistSans = GeistSans;
 
 export const metadata: Metadata = {
@@ -16,7 +18,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} antialiased`}>{children}</body>
+      <body className={`${geistSans.variable} antialiased`}>
+        <ChatLayout>
+          {children}
+        </ChatLayout>
+      </body>
     </html>
   );
 }

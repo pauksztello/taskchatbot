@@ -65,3 +65,70 @@ export async function clearChatMessages(chatId: string) {
   await db.delete(schema.messages).where(eq(schema.messages.chatId, chatId));
 }
 
+export async function listChats(cookieId: string) {
+  const result = await db.execute(sql`
+    SELECT 
+      c.id,
+      c.title,
+      c.created_at,
+      c.updated_at,
+      COUNT(m.chat_id) as message_count
+    FROM chats c
+    LEFT JOIN messages m ON c.id = m.chat_id
+    WHERE c.cookie_id = ${cookieId}
+    GROUP BY c.id, c.title, c.created_at, c.updated_at
+    ORDER BY c.updated_at DESC
+  `);
+  
+  return result.rows.map((row: any) => ({
+    id: row.id,
+    title: row.title || `Chat ${row.id.slice(0, 8)}`,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    messageCount: parseInt(row.message_count) || 0,
+  }));
+}
+
+export async function deleteChat(chatId: string) {
+  await db.delete(schema.chats).where(eq(schema.chats.id, chatId));
+}
+
+export async function updateChatTitle(chatId: string, title: string) {
+  await db.update(schema.chats)
+    .set({ 
+      title: title,
+      updatedAt: new Date()
+    })
+    .where(eq(schema.chats.id, chatId));
+}
+
+export async function generateChatTitle(chatId: string) {
+  const result = await db.execute(sql`
+    SELECT message
+    FROM messages
+    WHERE chat_id = ${chatId}
+    AND (message->>'role') = 'user'
+    ORDER BY created_at ASC
+    LIMIT 1
+  `);
+  
+  if (result.rows.length === 0) {
+    return 'New Chat';
+  }
+  
+  const firstMessage = result.rows[0].message as UIMessage;
+  const textContent = firstMessage.parts
+    .map(part => part.type === 'text' ? part.text : '')
+    .join('')
+    .trim();
+  
+  const words = textContent.split(/\s+/).filter(word => word.length > 0);
+  const title = words.slice(0, 4).join(' ');
+  
+  const finalTitle = words.length > 4 ? `${title}...` : title;
+  
+  await updateChatTitle(chatId, finalTitle);
+  
+  return finalTitle;
+}
+
