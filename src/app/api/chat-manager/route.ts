@@ -35,12 +35,12 @@ export async function POST(request: NextRequest) {
     await db.insert(schema.chats).values({
       id: newChatId,
       cookieId: cookieId,
-      title: title || 'New Chat',
+      title: 'New Chat',
     });
     
     const newChat = {
       id: newChatId,
-      title: title || 'New Chat',
+      title: 'New Chat',
       createdAt: new Date(),
       updatedAt: new Date(),
     };

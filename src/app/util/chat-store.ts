@@ -82,7 +82,7 @@ export async function listChats(cookieId: string) {
   
   return result.rows.map((row: any) => ({
     id: row.id,
-    title: row.title || `Chat ${row.id.slice(0, 8)}`,
+    title: row.title || 'New Chat',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     messageCount: parseInt(row.message_count) || 0,
