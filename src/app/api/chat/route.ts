@@ -5,6 +5,7 @@ import {
   UIMessage,
   validateUIMessages,
   createIdGenerator,
+  stepCountIs,
 } from 'ai';
 //import { z } from 'zod';
 import { clearAllMessages, loadChat, saveChat, generateChatTitle } from '@/app/util/chat-store';
@@ -34,6 +35,7 @@ export async function POST(req: Request) {
     model: openai('gpt-4o-mini'),
     messages: convertToModelMessages(validatedMessages),
     tools: mcpTools,
+    stopWhen: stepCountIs(5),
   });
 
   return result.toUIMessageStreamResponse({
