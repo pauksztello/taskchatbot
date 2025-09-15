@@ -1,3 +1,4 @@
+// src/lib/tools.ts
 import { experimental_createMCPClient as createMCPClient } from 'ai'; 
 
 export async function getMCPClient() {

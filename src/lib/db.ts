@@ -1,4 +1,4 @@
-// lib/db.ts
+// src/lib/db.ts
 import "server-only";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";

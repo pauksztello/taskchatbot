@@ -1,3 +1,4 @@
+// src/app/api/chat-manager/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { db, schema } from '@/lib/db';
 import { cookies } from 'next/headers';
@@ -22,8 +23,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { title } = await request.json();
-    const cookieStore = await cookies();
+     const cookieStore = await cookies();
     const cookieId = cookieStore.get('sid')?.value;
     
     if (!cookieId) {

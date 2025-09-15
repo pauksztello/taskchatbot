@@ -1,3 +1,4 @@
+// src/lib/session.ts
 import { db, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { randomUUID } from "crypto";
@@ -21,7 +22,6 @@ if (!process.env.DATABASE_URL) console.error("DATABASE_URL is not set");
       .insert(schema.chats)
       .values({ id: chatId, cookieId: cookieId });
   } else {
-    // Use existing chat or generate new ID
     chatId = existingChat[0].id;
   }
     return { chatId };

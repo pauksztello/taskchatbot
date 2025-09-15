@@ -1,3 +1,4 @@
+// src/app/api/chat/[id]/page.tsx
 import { loadChat } from '@/app/util/chat-store';
 import Chat from '@/app/ui/chat';
 

@@ -1,3 +1,4 @@
+// src/app/api/chat/[id]/stream/route.ts
 import { loadChat } from '@/app/util/chat-store';
 import { UI_MESSAGE_STREAM_HEADERS } from 'ai';
 import { after } from 'next/server';

@@ -1,3 +1,4 @@
+// src/app/page.tsx
 import { redirect } from 'next/navigation';
 import { createChat } from '@/app/util/chat-store';
 import { cookies } from 'next/headers';

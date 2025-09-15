@@ -1,4 +1,4 @@
-// lib/schema.ts
+// src/lib/schema.ts
 import {
   pgTable,
   uuid,
@@ -7,7 +7,7 @@ import {
   text,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
-import { generateId, UIMessage } from 'ai';
+import { UIMessage } from 'ai';
 
 export const chats = pgTable("chats", {
   id: uuid("id").primaryKey(),

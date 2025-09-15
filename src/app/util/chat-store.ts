@@ -1,7 +1,8 @@
+// src/app/util/chat-store.ts
 import { db, schema } from '@/lib/db';
 import { getOrCreateChat} from '@/lib/session';
 import { UIMessage } from 'ai';
-import { eq, asc, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export async function createChat(cookieId: string): Promise<string> {
   const { chatId } = await getOrCreateChat(cookieId);

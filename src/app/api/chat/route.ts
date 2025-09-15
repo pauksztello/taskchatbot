@@ -1,4 +1,4 @@
-// app/api/chat/route.ts
+// src/app/api/chat/route.ts
 import {
   convertToModelMessages,
   streamText,

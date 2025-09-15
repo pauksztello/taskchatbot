@@ -1,3 +1,4 @@
+// src/app/ui/chat-layout.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
