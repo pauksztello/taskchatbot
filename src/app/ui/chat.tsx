@@ -37,8 +37,8 @@ export default function Chat({
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+    <div className="flex flex-col h-full min-h-0">
+      <div className="flex-1 overflow-y-auto p-6 space-y-4 min-h-0">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center text-gray-500">
@@ -83,14 +83,14 @@ export default function Chat({
         )}
       </div>
 
-      <div className="border-t border-gray-200 bg-white p-4">
+      <div className="border-t border-gray-200 bg-white p-4 flex-shrink-0">
         <form onSubmit={handleSubmit} className="flex gap-3">
           <div className="flex-1 relative">
             <input
               value={input}
               onChange={e => setInput(e.target.value)}
               placeholder="Type a message..."
-              className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-500"
             />
           </div>
           <button

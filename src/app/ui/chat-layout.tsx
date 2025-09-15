@@ -144,8 +144,8 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
         />
       </div>
       
-      <div className="flex-1 flex flex-col lg:ml-0">
-        <div className="lg:hidden bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+      <div className="flex-1 flex flex-col lg:ml-0 min-h-0">
+        <div className="lg:hidden bg-white border-b border-gray-200 p-4 flex items-center justify-between flex-shrink-0">
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -158,7 +158,7 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
           <div className="w-10" />
         </div>
         
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden min-h-0">
           {children}
         </div>
       </div>
