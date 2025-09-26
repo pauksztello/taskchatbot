@@ -12,7 +12,8 @@ import { UIMessage } from 'ai';
 export const chats = pgTable("chats", {
   id: uuid("id").primaryKey(),
   streamId: uuid("stream_id").default(sql`null`),
-  cookieId: uuid("cookie_id").notNull(),
+  cookieId: uuid("cookie_id").notNull(), // NOTE: If user looses the cookie, the chat will be lost forever
+  // NOTE: ALso how would we manage multiple chats between same cookieid?
   title: text("title"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
@@ -36,3 +37,4 @@ export const messagesRelations = relations(messages, ({ one }) => ({
     references: [chats.id],
   }),
 }));
+

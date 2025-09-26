@@ -36,14 +36,28 @@ export async function POST(request: NextRequest) {
       id: newChatId,
       cookieId: cookieId,
       title: 'New Chat',
-    });
+    }); // NOTE: This is the second place where we found chat being created
+    // (The first one was in app/page.tsx)
     
     const newChat = {
       id: newChatId,
       title: 'New Chat',
       createdAt: new Date(),
       updatedAt: new Date(),
-    };
+    }; 
+
+    // NOTE: Something like this would be better
+    // const newChat = {
+    //   id: newChatId,
+    //   title: 'New Chat',
+    //   createdAt: new Date(),
+    //   updatedAt: new Date(),
+    // }; 
+
+    // await db.insert(schema.chats).values(newChat);
+
+
+
     
     return NextResponse.json(newChat);
   } catch (error) {

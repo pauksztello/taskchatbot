@@ -16,18 +16,18 @@ import { getMCPClient } from '@/lib/tools';
 
 
 export async function POST(req: Request) {
-  const { message, id }: { message: UIMessage | undefined; id: string; } = await req.json();  
+  const { message, id }: { message: UIMessage | undefined; id: string; } = await req.json();  //NOTE: Always validate the request body
 
   const { messages: previousMessages } = await loadChat(id);
   
   const messages = [...previousMessages, message!];
 
-  const mcpClient = await getMCPClient();
+  const mcpClient = await getMCPClient(); // NOTE: This should be moved outside of function so it does not recompute every route
   const mcpTools = await mcpClient.tools();
 
   const validatedMessages = await validateUIMessages({
-    messages,
-  });
+    messages, 
+  }); // NOTE: You are validating messages from the database which should already be correct while inserting into the database
 
   saveChat({ chatId: id, messages, streamId: null });
 

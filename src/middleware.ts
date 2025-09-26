@@ -6,12 +6,12 @@ export function middleware(req: NextRequest) {
   try {
     const res = NextResponse.next();
 
-    const existing = req.cookies.get("sid")?.value;
+    const existing = req.cookies.get("sid")?.value; // NOTE: This is not secure, anyone can set any value for a cookie
 
     if (!existing) {
       const uuid =
-        (globalThis.crypto as any)?.randomUUID?.() ??
-        `${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
+        (globalThis.crypto as any)?.randomUUID?.() ?? // NOTE: What is this type nightmare? Also never use "any"
+        `${Date.now()}-${Math.floor(Math.random() * 1e9)}`; //NOTE: Unreadable
 
       res.cookies.set("sid", uuid, {
         httpOnly: true,
@@ -24,8 +24,8 @@ export function middleware(req: NextRequest) {
 
     return res;
   } catch (err) {
-    console.error("middleware error:", err);
-    return NextResponse.next();
+    console.error("middleware error:", err); 
+    return NextResponse.next(); // NOTE: why do you return response here if you get an error?
   }
 }
 

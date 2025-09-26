@@ -4,14 +4,18 @@ import { getOrCreateChat} from '@/lib/session';
 import { UIMessage } from 'ai';
 import { eq, sql } from "drizzle-orm";
 
-export async function createChat(cookieId: string): Promise<string> {
+// NOTE: Why do you have a seperate util folder? Why do not use exiting lib folder.
+
+
+
+export async function createChat(cookieId: string): Promise<string> { // NOTE: whats the point of this additional wrapper?
   const { chatId } = await getOrCreateChat(cookieId);
   return chatId;
 }
 
 export async function loadChat(id: string): Promise<{messages: UIMessage[], streamId: string | null}> {
   const timestamp = Date.now();
-  const randomLimit = 1000 + (timestamp % 1000);
+  const randomLimit = 1000 + (timestamp % 1000); // NOTE: What is the purpose of random limit?
   
   const result = await db.execute(sql`
     SELECT message, created_at 
@@ -28,11 +32,12 @@ export async function loadChat(id: string): Promise<{messages: UIMessage[], stre
     LIMIT ${randomLimit}
   `);
   
-  return {messages: result.rows.map((row: any) => row.message as UIMessage), 
+  return {messages: result.rows.map((row: any) => row.message as UIMessage),  // NOTE: Unreadable, also using "any" is a sin
           streamId: (streamResult.rows[0]?.stream_id as string) ?? null};
 }
 
 export async function saveChat({ chatId, messages, streamId }: 
+  // NOTE: Is this vibe coded?
   { chatId: string; messages: UIMessage[]; streamId: string | null }) {
   const existingRows = await db.select().from(schema.messages).where(eq(schema.messages.chatId, chatId));
   
@@ -58,8 +63,8 @@ export async function saveChat({ chatId, messages, streamId }:
   );
 }
 
-export async function clearAllMessages() {
-  await db.delete(schema.messages);
+export async function clearAllMessages() { // NOTE: Nice, an exaple of seperate layer for database operations
+  await db.delete(schema.messages); // NOTE: Do not import whole db, better would be to just import messages or only the tables u need
 }
 
 export async function clearChatMessages(chatId: string) {
@@ -67,6 +72,7 @@ export async function clearChatMessages(chatId: string) {
 }
 
 export async function listChats(cookieId: string) {
+
   const result = await db.execute(sql`
     SELECT 
       c.id,
@@ -79,13 +85,14 @@ export async function listChats(cookieId: string) {
     WHERE c.cookie_id = ${cookieId}
     GROUP BY c.id, c.title, c.created_at, c.updated_at
     ORDER BY c.updated_at DESC
-  `);
+  `);   // NOTE: Drizzle ORM offers you to write queries programatically, instead of using raw sql, which is easier to read and maintain
+
   
-  return result.rows.map((row: any) => ({
+  return result.rows.map((row: any) => ({ // NOTE: Any
     id: row.id,
     title: row.title || 'New Chat',
     createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    updatedAt: row.updated_at, // NOTE: No consistency, some values typed camel case and some snake case, in typescript camel case is the standard "createdAt"
     messageCount: parseInt(row.message_count) || 0,
   }));
 }

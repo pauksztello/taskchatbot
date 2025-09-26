@@ -3,9 +3,9 @@ import type { Metadata, Viewport } from "next";
 
 import "./globals.css";
 import { GeistSans } from "geist/font/sans";
-import ChatLayout from '@/app/ui/chat-layout';
+import ChatLayout from "@/app/ui/chat-layout";
 
-const geistSans = GeistSans;
+const geistSans = GeistSans; // NOTE: why do you re assign it to a variable?
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -27,9 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} antialiased`}>
-        <ChatLayout>
-          {children}
-        </ChatLayout>
+        <ChatLayout>{children}</ChatLayout>
       </body>
     </html>
   );
